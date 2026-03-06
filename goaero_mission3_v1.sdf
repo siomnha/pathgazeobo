@@ -471,6 +471,13 @@
       <pose degrees="true">0 0 0.06 0 0 90</pose>
     </include>
 
+
+    <include>
+      <uri>file:///workspace/pathgazeobo/models/iris_with_depth</uri>
+      <name>iris_with_depth</name>
+      <pose>0 0 0.2 0 0 0</pose>
+    </include>
+
     <!-- <include>
       <uri>model://grass_plane</uri>
       <pose degrees="true">0 0 0 0 0 0</pose>
