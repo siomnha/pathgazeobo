@@ -1,0 +1,543 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="goaero_mission3">
+    <physics name="1ms" type="ignore">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+    <plugin filename="gz-sim-imu-system"
+      name="gz::sim::systems::Imu">
+    </plugin>
+    <plugin filename="gz-sim-navsat-system"
+      name="gz::sim::systems::NavSat">
+    </plugin>
+    <plugin
+      filename="gz-sim-particle-emitter-system"
+      name="gz::sim::systems::ParticleEmitter">
+    </plugin>
+    
+    <scene>
+      <ambient>1.0 1.0 1.0</ambient>
+      <background>0.8 0.8 0.8</background>
+      <sky></sky>
+    </scene>
+
+    <spherical_coordinates>
+      <latitude_deg>-35.363262</latitude_deg>
+      <longitude_deg>149.165237</longitude_deg>
+      <elevation>584</elevation>
+      <heading_deg>0</heading_deg>
+      <surface_model>EARTH_WGS84</surface_model>
+    </spherical_coordinates>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.8 0.8 0.8 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="axes">
+      <static>1</static>
+      <link name="link">
+        <sensor name="navsat_sensor" type="navsat">
+          <always_on>1</always_on>
+          <update_rate>60</update_rate>
+        </sensor>
+      </link>
+    </model>
+    
+    <!-- ========= THE BASE (hard surface) =========
+         Size: 7.6 m (width, y) x 15 m (length, x)
+         Centered at x=0, y=0 -->
+    <model name="The_Base">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="base_link">
+        <visual name="base_visual">
+          <geometry>
+            <box>
+              <size>15.0 7.6 0.02</size>
+            </box>
+          </geometry>
+          <pose>0 0 0 0 0 0</pose>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <collision name="base_collision">
+          <geometry>
+            <box>
+              <size>15.0 7.6 0.02</size>
+            </box>
+          </geometry>
+          <pose>0 0 0.01 0 0 0</pose>
+        </collision>
+      </link>
+    </model>
+
+    <!-- ========= Course & Obstacles =========
+         Course runs along +X. We'll place obstacles spaced along X. -->
+
+    <!-- Obstacle spacing: we'll spread them over ~90 m total distance -->
+    <!-- Obstacle 1 (vertical pylon) - OUTBOUND: left turn to go around this -->
+    <model name="obstacle_1_pylon">
+      <static>true</static>
+      <!-- place at x = 25 m (outbound early), y = +6 m (left side) -->
+      <pose degrees="true">90 40 0 0 0 -90</pose>
+      <link name="pylon1_link">
+        <visual name="pylon1_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>16.0</length>
+            </cylinder>
+          </geometry>
+          <pose>0 0 8.0 0 0 0</pose>
+          <material>
+            <ambient>0.8 0.1 0.1 1</ambient>
+            <diffuse>0.8 0.1 0.1 1</diffuse>
+          </material>
+        </visual>
+        <collision name="pylon1_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>16</length>
+            </cylinder>
+          </geometry>
+          <pose>0 0 8.0 0 0 0</pose>
+        </collision>
+      </link>
+
+      <!-- Obstacle 1 barrier -->
+      <link name="pylon1_wall">
+        <visual name="pylon1_wall_visual">
+          <geometry>
+            <box>
+              <size>60 0.1 15</size>
+            </box>
+          </geometry>
+          <pose>30 0 7.5 0 0 0</pose>
+          <material>
+            <ambient>0.7 0.2 0.2 0.6</ambient>
+            <diffuse>0.7 0.2 0.2 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="pylon1_wall_collision">
+          <geometry>
+            <box>
+              <size>40 0.1 15</size>
+            </box>
+          </geometry>
+          <pose>20 0 7.5 0 0 0</pose>
+        </collision>
+      </link>
+      
+    </model>
+
+    <!-- Obstacle 2 (vertical pylon) - inbound between 2 and 4 -->
+    <model name="obstacle_2_pylon">
+      <static>true</static>
+      <!-- place at x = 45 m, y = -3 m -->
+      <pose degrees="true">60 20 0 0 0 180</pose>
+      <link name="pylon2_link">
+        <visual name="pylon2_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>11.0</length>
+            </cylinder>
+          </geometry>
+          <pose>0 0 5.5 0 0 0</pose>
+          <material>
+            <ambient>0.8 0.1 0.1 1</ambient>
+            <diffuse>0.8 0.1 0.1 1</diffuse>
+          </material>
+        </visual>
+        <collision name="pylon2_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>11.0</length>
+            </cylinder>
+          </geometry>
+          <pose>0 0 5.5 0 0 0</pose>
+        </collision>
+      </link>
+
+      <!-- Top bar (to make gate visually complete) -->
+      <link name="pylon2_ceiling">
+        <visual name="pylon2_ceiling_visual">
+          <geometry>
+            <box>
+              <size>8 0.5 0.1</size>
+            </box>
+          </geometry>
+          <pose>4 0 11.0 0 0 0</pose>
+          <material>
+            <ambient>0.7 0.2 0.2 1</ambient>
+            <diffuse>0.7 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+        <collision name="pylon2_ceiling_collision">
+          <geometry>
+            <box>
+              <size>8 0.5 0.1</size>
+            </box>
+          </geometry>
+          <pose>4 0 11.0 0 0 0</pose>
+        </collision>
+      </link>
+    </model>
+
+    <!-- Obstacle 3 (virtual wall) - 15 m high -->
+    <model name="obstacle_3_virtual_wall">
+      <static>true</static>
+      <!-- place at x = 60 m centered, y = 0 -->
+      <pose degrees="true">40 25 0 0 0 90</pose>
+      <link name="wall_link">
+        <visual name="wall_visual">
+          <geometry>
+            <!-- wide wall (10 m wide), thin (0.2 m), tall (15 m) -->
+            <box>
+              <size>20 0.2 15.0</size>
+            </box>
+          </geometry>
+          <pose>0 0 7.5 0 0 0</pose>
+          <material>
+            <ambient>0.2 0.2 0.8 0.6</ambient>
+            <diffuse>0.2 0.2 0.8 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="wall_collision">
+          <geometry>
+            <box>
+              <size>10.0 0.2 15.0</size>
+            </box>
+          </geometry>
+          <pose>0 0 7.5 0 0 0</pose>
+        </collision>
+      </link>
+      <link name="pylon3_link">
+        <visual name="pylon3_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>15.0</length>
+            </cylinder>
+          </geometry>
+          <pose>10 0 7.5 0 0 0</pose>
+          <material>
+            <ambient>0.8 0.1 0.1 1</ambient>
+            <diffuse>0.8 0.1 0.1 1</diffuse>
+          </material>
+        </visual>
+        <collision name="pylon3_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>15.0</length>
+            </cylinder>
+          </geometry>
+          <pose>0 0 5.5 0 0 0</pose>
+        </collision>
+      </link>
+
+      <!-- Top bar (to make gate visually complete) -->
+      <link name="pylon3_ceiling">
+        <visual name="pylon3_ceiling_visual">
+          <geometry>
+            <box>
+              <size>20 0.5 0.1</size>
+            </box>
+          </geometry>
+          <pose>0 0 15.0 0 0 0</pose>
+          <material>
+            <ambient>0.7 0.2 0.2 1</ambient>
+            <diffuse>0.7 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+        <collision name="pylon3_ceiling_collision">
+          <geometry>
+            <box>
+              <size>20 0.5 0.1</size>
+            </box>
+          </geometry>
+          <pose>0 0 15.0 0 0 0</pose>
+        </collision>
+      </link>
+    </model>
+
+    <!-- Obstacle 4 (vertical pylon) - symmetric to 2 -->
+    <!-- Obstacle 2 (vertical pylon) - inbound between 2 and 4 -->
+    <model name="obstacle_4_pylon">
+      <static>true</static>
+      <!-- place at x = 45 m, y = -3 m -->
+      <pose degrees="true">20 25 0 0 0 0</pose>
+      <link name="pylon4_link">
+        <visual name="pylon4_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>11.0</length>
+            </cylinder>
+          </geometry>
+          <pose>0 0 5.5 0 0 0</pose>
+          <material>
+            <ambient>0.8 0.1 0.1 1</ambient>
+            <diffuse>0.8 0.1 0.1 1</diffuse>
+          </material>
+        </visual>
+        <collision name="pylon4_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>11.0</length>
+            </cylinder>
+          </geometry>
+          <pose>0 0 5.5 0 0 0</pose>
+        </collision>
+      </link>
+
+      <!-- Top bar (to make gate visually complete) -->
+      <link name="pylon4_ceiling">
+        <visual name="pylon4_ceiling_visual">
+          <geometry>
+            <box>
+              <size>8 0.5 0.1</size>
+            </box>
+          </geometry>
+          <pose>4 0 11.0 0 0 0</pose>
+          <material>
+            <ambient>0.7 0.2 0.2 1</ambient>
+            <diffuse>0.7 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+        <collision name="pylon4_ceiling_collision">
+          <geometry>
+            <box>
+              <size>8 0.5 0.1</size>
+            </box>
+          </geometry>
+          <pose>4 0 11.0 0 0 0</pose>
+        </collision>
+      </link>
+    </model>
+
+    <!-- ========= The Spot (landing pad) 2.4 x 2.4 m ========= -->
+    <model name="The_Spot">
+      <static>true</static>
+      <!-- place at x = 90 m (end of course), y = 0 -->
+      <pose degrees="true">-5 30 0 0 0 90</pose>
+      <link name="spot_link">
+        <visual name="spot_visual">
+          <geometry>
+            <box>
+              <size>2.4 2.4 0.02</size>
+            </box>
+          </geometry>
+          <pose>0 0 0.01 0 0 0</pose>
+          <material>
+            <ambient>0.0 0.6 0.6 1</ambient>
+            <diffuse>0.0 0.6 0.6 1</diffuse>
+          </material>
+        </visual>
+        <collision name="spot_collision">
+          <geometry>
+            <box>
+              <size>2.4 2.4 0.02</size>
+            </box>
+          </geometry>
+          <pose>-5 0 0.01 0 0 0</pose>
+        </collision>
+      </link>
+    </model>
+
+    <!-- ========= Gate for Spot entrance/exit =========
+         Gate opening: 8.5 m wide x 9 m high; threshold located 1.2 m from one edge.
+         Implemented as two posts + top bar. -->
+    <model name="spot_gate">
+      <static>true</static>
+      <!-- center gate just before the spot at x = 86.5 m so that threshold ~1.2 m from near edge -->
+      <pose degrees="True">1.2 30 0 0 0 90</pose>
+
+      <!-- Left post -->
+      <link name="gate_post_left">
+        <visual name="post_left_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>9.0</length>
+            </cylinder>
+          </geometry>
+          <!-- Put base at z = 4.5 -->
+          <pose>-4.25 0 4.5 0 0 0</pose>
+          <material>
+            <ambient>0.6 0.6 0.1 1</ambient>
+            <diffuse>0.6 0.6 0.1 1</diffuse>
+          </material>
+        </visual>
+        <collision name="post_left_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>9.0</length>
+            </cylinder>
+          </geometry>
+          <pose>-4.25 0 4.5 0 0 0</pose>
+        </collision>
+      </link>
+
+      <!-- Right post -->
+      <link name="gate_post_right">
+        <visual name="post_right_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>9.0</length>
+            </cylinder>
+          </geometry>
+          <pose>4.25 0 4.5 0 0 0</pose>
+          <material>
+            <ambient>0.6 0.6 0.1 1</ambient>
+            <diffuse>0.6 0.6 0.1 1</diffuse>
+          </material>
+        </visual>
+        <collision name="post_right_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.15</radius>
+              <length>9.0</length>
+            </cylinder>
+          </geometry>
+          <pose>4.25 0 4.5 0 0 0</pose>
+        </collision>
+      </link>
+
+      <!-- Top bar (to make gate visually complete) -->
+      <link name="gate_top">
+        <visual name="gate_top_visual">
+          <geometry>
+            <box>
+              <size>8.5 0.2 0.2</size>
+            </box>
+          </geometry>
+          <pose>0 0 9.0 0 0 0</pose>
+          <material>
+            <ambient>0.7 0.7 0.2 1</ambient>
+            <diffuse>0.7 0.7 0.2 1</diffuse>
+          </material>
+        </visual>
+        <collision name="gate_top_collision">
+          <geometry>
+            <box>
+              <size>8.5 0.2 0.2</size>
+            </box>
+          </geometry>
+          <pose>0 0 9.0 0 0 0</pose>
+        </collision>
+      </link>
+    </model>
+
+    <!-- ========= Spawn point (The Base center) for convenience ========= -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/saiaravind19/models/helipad</uri>
+      <pose degrees="true">0 0 0.06 0 0 90</pose>
+    </include>
+
+    <!-- <include>
+      <uri>model://grass_plane</uri>
+      <pose degrees="true">0 0 0 0 0 0</pose>
+    </include> -->
+
+    <model name='ground_plane'>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>200 120</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>200 120</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.2 0.2 0.2 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+        <pose>50 10 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      <pose>0 0 0 0 -0 0</pose>
+      <self_collide>false</self_collide>
+    </model>
+    <!-- <wind>
+      <linear_velocity>5 2 0</linear_velocity>
+    </wind> -->
+
+    <!-- <include>
+      <uri>https://fuel.gazebosim.org/1.0/openrobotics/models/fog generator</uri>
+    </include> -->
+
+    <!-- <include>
+    <uri>
+    https://fuel.gazebosim.org/1.0/OpenRobotics/models/FallingSnow
+    </uri>
+    </include> -->
+
+  </world>
+</sdf>
