@@ -27,6 +27,8 @@
   <always_on>1</always_on>
   <topic>/front_depth</topic>
   <visualize>true</visualize>
+  <visualize>true</visualize>
+
   <camera>
     <horizontal_fov>1.047</horizontal_fov>
     <image>

@@ -72,6 +72,8 @@ ET.SubElement(sensor, 'always_on').text = '1'
 ET.SubElement(sensor, 'update_rate').text = '15'
 ET.SubElement(sensor, 'topic').text = '/front_depth'
 ET.SubElement(sensor, 'visualize').text = 'true'
+ET.SubElement(sensor, 'visualize').text = 'true'
+
 
 camera = ET.SubElement(sensor, 'camera')
 ET.SubElement(camera, 'horizontal_fov').text = '1.047'

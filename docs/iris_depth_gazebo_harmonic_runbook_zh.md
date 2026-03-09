@@ -237,6 +237,7 @@ MODEL_SDF=/abs/path/to/iris/model.sdf ./scripts/patch_sitl_iris_depth_camera.sh
   <update_rate>15</update_rate>
   <topic>/front_depth</topic>
   <visualize>true</visualize>
+  <visualize>true</visualize>
   <camera>
     <horizontal_fov>1.047</horizontal_fov>
     <image>
