@@ -55,10 +55,16 @@ if link is None:
         raise SystemExit('[ERROR] 未找到任何 <link> 节点。')
     link = links[0]
 
-for s in link.findall('sensor'):
+# Remove existing front_depth sensor definitions (if any), then write back
+# one canonical block to avoid malformed legacy configs.
+removed = 0
+for s in list(link.findall('sensor')):
     if s.get('name') == 'front_depth':
-        print('[INFO] 已存在 front_depth 传感器，跳过修改。')
-        raise SystemExit(0)
+        link.remove(s)
+        removed += 1
+
+if removed:
+    print(f'[INFO] 已移除 {removed} 个已有 front_depth 传感器，准备写入标准配置。')
 
 sensor = ET.Element('sensor', {'name': 'front_depth', 'type': 'depth_camera'})
 ET.SubElement(sensor, 'pose').text = '0.12 0 0.03 0 0 0'

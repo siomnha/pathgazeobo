@@ -54,9 +54,9 @@ MODEL_SDF=/abs/path/to/iris/model.sdf ./scripts/patch_sitl_iris_depth_camera.sh
 
 脚本会自动：
 
-- 注入 `front_depth`
+- 注入（或重写）`front_depth` 为标准 Gazebo depth_camera 结构
 - 写入备份 `model.sdf.bak`
-- 若已存在传感器则跳过（不会重复加）
+- 若已存在旧/错误 `front_depth`，会先移除再写入标准版本
 
 ### 方案 B 手工改（如果你不想跑脚本）
 
