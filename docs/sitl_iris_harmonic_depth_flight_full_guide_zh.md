@@ -46,6 +46,7 @@ sudo apt install -y \
 
 ```bash
 source /opt/ros/humble/setup.bash
+export GZ_SIM_RESOURCE_PATH=<你的 ardupilot_gazebo 路径>/models:$GZ_SIM_RESOURCE_PATH
 ```
 
 ---
@@ -91,6 +92,34 @@ gz topic -l | rg -E 'imu|odometry|pose|iris'
 ```
 
 如果这里就失败，先不要进入 depth camera 步骤。
+
+### 2.4 MAVProxy 连不上时的关键排查（你现在这个问题）
+
+如果 MAVProxy 提示一直 `waiting for heartbeat`，通常是下面两类原因：
+
+1. **加载了错误的 iris 模型**（只有外观，没有 ArduPilot 插件）。
+2. **SITL 与 Gazebo 插件没连上**（模型/资源路径不对）。
+
+先做这 3 条：
+
+```bash
+# 1) 看 SITL 是否在输出 heartbeat/状态
+sim_vehicle.py -v ArduCopter -f gazebo-iris --console --map
+
+# 2) 单独连接 MAVProxy（若没自动起）
+mavproxy.py --master=tcp:127.0.0.1:5760 --console --map
+
+# 3) 检查 Gazebo 是否使用了 sitl_iris 模型名
+gz topic -l | rg -E 'sitl_iris|iris'
+```
+
+另外要确保 Gazebo 找到的是你 **SITL 仓库里的模型**，不是 Fuel 的同名 `iris`：
+
+```bash
+export GZ_SIM_RESOURCE_PATH=<你的 ardupilot_gazebo 路径>/models:$GZ_SIM_RESOURCE_PATH
+```
+
+然后重启 `gz sim` + `sim_vehicle.py`。
 
 ---
 
