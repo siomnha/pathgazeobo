@@ -26,6 +26,10 @@
   <update_rate>15</update_rate>
   <always_on>1</always_on>
   <topic>/front_depth</topic>
+<<<<<<< codex/add-copter-with-depth-camera-to-simulate-octomap-2ws319
+  <visualize>true</visualize>
+=======
+>>>>>>> main
   <camera>
     <horizontal_fov>1.047</horizontal_fov>
     <image>
