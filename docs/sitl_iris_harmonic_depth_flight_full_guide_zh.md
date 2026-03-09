@@ -160,10 +160,8 @@ MODEL_SDF=/abs/path/to/iris/model.sdf ./scripts/patch_sitl_iris_depth_camera.sh
   <always_on>1</always_on>
   <update_rate>15</update_rate>
   <topic>/front_depth</topic>
-<<<<<<< codex/add-copter-with-depth-camera-to-simulate-octomap-2ws319
   <visualize>true</visualize>
-=======
->>>>>>> main
+  <visualize>true</visualize>
   <camera>
     <horizontal_fov>1.047</horizontal_fov>
     <image>
