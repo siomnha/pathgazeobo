@@ -7,7 +7,7 @@ set -euo pipefail
 
 WORLD_PATH="${WORLD_PATH:-/workspace/pathgazeobo/goaero_mission3_v1.sdf}"
 WORLD_NAME="${WORLD_NAME:-goaero_mission3}"
-MODEL_NAME="${MODEL_NAME:-iris_with_depth}"
+MODEL_NAME="${MODEL_NAME:-sitl_iris}"
 LINK_NAME="${LINK_NAME:-base_link}"
 SENSOR_NAME="${SENSOR_NAME:-front_depth}"
 RESOLUTION="${RESOLUTION:-0.15}"

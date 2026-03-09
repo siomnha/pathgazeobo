@@ -50,6 +50,20 @@ source /opt/ros/humble/setup.bash
 
 ---
 
+## 1.5 先改 world include（避免加载本地占位机体）
+
+请把 `goaero_mission3_v1.sdf` 里的本地占位模型：
+
+- `file:///workspace/pathgazeobo/models/iris_with_depth`
+
+改为 SITL 用的：
+
+- `model://iris`（示例命名：`sitl_iris`）
+
+这样 Gazebo 场景只会出现 SITL 机体，不会和本地占位机体混淆控制对象。
+
+---
+
 ## 2) 先跑通 SITL Iris + Gazebo Harmonic（不改模型前）
 
 > 先验证“飞控链路可用”，再加传感器，定位问题更快。
@@ -165,15 +179,13 @@ gz topic -l | rg -E 'front_depth|camera_info|depth'
 - `.../sensor/front_depth/image`
 - `.../sensor/front_depth/camera_info`
 
-请按你的实际模型名替换 `<MODEL_NAME>`。
-
 ### 5.1 终端 C：桥接图像与内参
 
 ```bash
 source /opt/ros/humble/setup.bash
 ros2 run ros_gz_bridge parameter_bridge \
-  /world/goaero_mission3/model/<MODEL_NAME>/link/base_link/sensor/front_depth/image@sensor_msgs/msg/Image@gz.msgs.Image \
-  /world/goaero_mission3/model/<MODEL_NAME>/link/base_link/sensor/front_depth/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo
+  /world/goaero_mission3/model/sitl_iris/link/base_link/sensor/front_depth/image@sensor_msgs/msg/Image@gz.msgs.Image \
+  /world/goaero_mission3/model/sitl_iris/link/base_link/sensor/front_depth/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo
 ```
 
 ### 5.2 终端 D：深度图转点云
@@ -182,8 +194,8 @@ ros2 run ros_gz_bridge parameter_bridge \
 source /opt/ros/humble/setup.bash
 ros2 run depth_image_proc point_cloud_xyz_node \
   --ros-args \
-  -r image_rect:=/world/goaero_mission3/model/<MODEL_NAME>/link/base_link/sensor/front_depth/image \
-  -r camera_info:=/world/goaero_mission3/model/<MODEL_NAME>/link/base_link/sensor/front_depth/camera_info \
+  -r image_rect:=/world/goaero_mission3/model/sitl_iris/link/base_link/sensor/front_depth/image \
+  -r camera_info:=/world/goaero_mission3/model/sitl_iris/link/base_link/sensor/front_depth/camera_info \
   -r points:=/depth/points
 ```
 
