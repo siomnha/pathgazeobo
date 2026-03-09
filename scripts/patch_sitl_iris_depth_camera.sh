@@ -65,7 +65,10 @@ ET.SubElement(sensor, 'pose').text = '0.12 0 0.03 0 0 0'
 ET.SubElement(sensor, 'always_on').text = '1'
 ET.SubElement(sensor, 'update_rate').text = '15'
 ET.SubElement(sensor, 'topic').text = '/front_depth'
+<<<<<<< codex/add-copter-with-depth-camera-to-simulate-octomap-2ws319
 ET.SubElement(sensor, 'visualize').text = 'true'
+=======
+>>>>>>> main
 
 camera = ET.SubElement(sensor, 'camera')
 ET.SubElement(camera, 'horizontal_fov').text = '1.047'
