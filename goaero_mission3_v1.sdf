@@ -471,6 +471,14 @@
       <pose degrees="true">0 0 0.06 0 0 90</pose>
     </include>
 
+
+    <!-- Use SITL iris model instead of local placeholder model. -->
+    <include>
+      <uri>model://iris</uri>
+      <name>sitl_iris</name>
+      <pose>0 0 0.2 0 0 0</pose>
+    </include>
+
     <!-- <include>
       <uri>model://grass_plane</uri>
       <pose degrees="true">0 0 0 0 0 0</pose>
