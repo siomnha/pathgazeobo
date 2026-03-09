@@ -1,5 +1,93 @@
 # ArduPilot SITL + Gazebo 深度相机到 OctoMap（中文实战）
 
+
+## 0) 先给你“能直接复制”的命令（目标：稳定拿到 `/octomap_full`）
+
+> 你现场遇到的核心症状是：**Gazebo 有 depth topic，但 ROS `echo/hz` 没消息**。先按下面固定顺序跑，避免混用两条链路。
+
+### 0.1 终端 A：统一环境 + 启动 Gazebo
+
+```bash
+source /opt/ros/humble/setup.bash
+export ROS_DOMAIN_ID=0
+export ROS_LOCALHOST_ONLY=0
+export GZ_PARTITION=default
+
+gz sim -r /workspace/pathgazeobo/goaero_mission3_v1.sdf
+```
+
+### 0.2 终端 B：推荐链路（image + camera_info -> depth_image_proc）
+
+```bash
+source /opt/ros/humble/setup.bash
+export ROS_DOMAIN_ID=0
+export ROS_LOCALHOST_ONLY=0
+export GZ_PARTITION=default
+
+# 先确认真实 GZ 话题名（不要手猜）
+gz topic -l | rg 'front_depth|camera_info|image|points'
+
+# 把下面两条替换成你上一步看到的“完整路径”
+GZ_IMAGE=/world/goaero_mission3/model/sitl_iris/link/base_link/sensor/front_depth/image
+GZ_INFO=/world/goaero_mission3/model/sitl_iris/link/base_link/sensor/front_depth/camera_info
+
+ros2 run ros_gz_bridge parameter_bridge   ${GZ_IMAGE}@sensor_msgs/msg/Image@gz.msgs.Image   ${GZ_INFO}@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo
+```
+
+### 0.3 终端 C：depth_image_proc 出点云
+
+```bash
+source /opt/ros/humble/setup.bash
+export ROS_DOMAIN_ID=0
+export ROS_LOCALHOST_ONLY=0
+
+GZ_IMAGE=/world/goaero_mission3/model/sitl_iris/link/base_link/sensor/front_depth/image
+GZ_INFO=/world/goaero_mission3/model/sitl_iris/link/base_link/sensor/front_depth/camera_info
+
+ros2 run depth_image_proc point_cloud_xyz_node   --ros-args   -r image_rect:=${GZ_IMAGE}   -r camera_info:=${GZ_INFO}   -r points:=/depth/points
+```
+
+### 0.4 终端 D：启动 OctoMap
+
+```bash
+source /opt/ros/humble/setup.bash
+export ROS_DOMAIN_ID=0
+
+ros2 run octomap_server octomap_server_node   --ros-args   -p frame_id:=map   -p resolution:=0.15   -p sensor_model/max_range:=20.0   -r cloud_in:=/depth/points
+```
+
+### 0.5 终端 E：只做验证
+
+```bash
+source /opt/ros/humble/setup.bash
+export ROS_DOMAIN_ID=0
+
+ros2 topic info /depth/points -v
+ros2 topic echo /depth/points --once
+ros2 topic hz /depth/points
+ros2 topic echo /octomap_full --once
+```
+
+### 0.6 如果你坚持“points 直桥”而不是 image_proc
+
+可以，但建议只在 image 链路稳定后再试。命令（同样要用完整路径）：
+
+```bash
+ros2 run ros_gz_bridge parameter_bridge   /world/goaero_mission3/model/sitl_iris/link/base_link/sensor/front_depth/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked
+```
+
+若 `ros2 topic hz` 仍为 0，优先回到 image_proc 路线定位，因为它更容易观察每一级数据。
+
+### 0.7 “有 topic 但无消息”最常见 5 个原因
+
+1. **桥接了错误 topic 名**（只桥了 `/front_depth`，实际在 `/world/.../front_depth/...`）。
+2. **终端环境变量不一致**（`ROS_DOMAIN_ID`、`ROS_LOCALHOST_ONLY`、`GZ_PARTITION`）。
+3. **链路混用**（一会儿看 `/front_depth/points`，一会儿 octomap 订阅 `/depth/points`）。
+4. **Gazebo 传感器未持续发布**（先 `gz topic -e -n 1 <topic>` 确认确实有数据包）。
+5. **TF/固定坐标缺失**（点云有了但 octomap 没输出，可先补 `map -> base_link` 静态 TF）。
+
+---
+
 这份文档按你当前诉求重排：**先给“iris 这类无人机模型 + 深度相机 + OctoMap”的完整管线**，再给“没有无人机模型时的过渡方案”。
 
 ---
@@ -27,8 +115,6 @@
   <always_on>1</always_on>
   <topic>/front_depth</topic>
   <visualize>true</visualize>
-  <visualize>true</visualize>
-
   <camera>
     <horizontal_fov>1.047</horizontal_fov>
     <image>
