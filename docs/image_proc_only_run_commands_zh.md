@@ -70,6 +70,10 @@ ros2 run ros_gz_bridge parameter_bridge \
 > 如果你的 Gazebo 话题是 world scoped（例如 `/world/.../sensor/front_depth/image`），
 > 就把上面 `/front_depth` 和 `/camera_info` 替换成对应长话题名。
 
+> 如果你的 Gazebo 话题是 world scoped（例如 `/world/.../sensor/front_depth/image`），
+> 就把上面 `/front_depth` 和 `/camera_info` 替换成对应长话题名。
+
+
 ### 终端 4：depth_image_proc 生成点云
 ```bash
 source /opt/ros/humble/setup.bash
@@ -174,3 +178,4 @@ ros2 run tf2_tools view_frames
 ros2 topic echo /tf --once
 ros2 topic echo /tf_static --once
 ```
+
