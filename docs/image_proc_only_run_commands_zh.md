@@ -67,9 +67,12 @@ ros2 run ros_gz_bridge parameter_bridge \
   /camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo
 ```
 
+<<<<<<< codex/add-copter-with-depth-camera-to-simulate-octomap-mgp53r
 > 如果你的 Gazebo 话题是 world scoped（例如 `/world/.../sensor/front_depth/image`），
 > 就把上面 `/front_depth` 和 `/camera_info` 替换成对应长话题名。
 
+=======
+>>>>>>> main
 ### 终端 4：depth_image_proc 生成点云
 ```bash
 source /opt/ros/humble/setup.bash
@@ -115,6 +118,7 @@ ros2 topic echo /octomap_full --once
 如果你选择了 image proc 链路：
 - 只看 `/front_depth` + `/camera_info` + `/depth/points`
 - 不要再用 `/front_depth/points` 直桥命令
+<<<<<<< codex/add-copter-with-depth-camera-to-simulate-octomap-mgp53r
 
 ---
 
@@ -174,3 +178,5 @@ ros2 run tf2_tools view_frames
 ros2 topic echo /tf --once
 ros2 topic echo /tf_static --once
 ```
+=======
+>>>>>>> main
