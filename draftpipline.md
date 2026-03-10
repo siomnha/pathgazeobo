@@ -24,6 +24,19 @@ No direct points mode here.
 
 ## 2) Terminal-by-terminal commands
 
+Before running terminals, ensure your world has PosePublisher plugin (you said you added it):
+
+```xml
+<plugin filename="gz-sim-pose-publisher-system"
+        name="gz::sim::systems::PosePublisher">
+  <publish_link_pose>true</publish_link_pose>
+  <publish_sensor_pose>true</publish_sensor_pose>
+  <publish_model_pose>true</publish_model_pose>
+  <publish_nested_model_pose>false</publish_nested_model_pose>
+  <publish_tf>true</publish_tf>
+</plugin>
+```
+
 ## Terminal A — Gazebo
 
 ```bash
@@ -70,17 +83,20 @@ ros2 run tf2_ros static_transform_publisher \
   0.12 0 0.03 0 0 0 base_link front_depth
 ```
 
-## Terminal F — Publish drone dynamic TF to map (must-have for global map)
+## Terminal F — Bridge Gazebo TF to ROS TF (must-have for global map)
 
-Bridge Gazebo model pose to ROS TF (replace model name if not `sitl_iris`):
+With PosePublisher `<publish_tf>true</publish_tf>`, bridge `/tf` directly:
 
 ```bash
 source /opt/ros/humble/setup.bash
 ros2 run ros_gz_bridge parameter_bridge \
-  /model/sitl_iris/pose@tf2_msgs/msg/TFMessage@gz.msgs.Pose_V
+  /tf@tf2_msgs/msg/TFMessage@gz.msgs.Pose_V
 ```
 
 > This is the critical step that keeps camera moving in map frame.
+>
+> If your Gazebo exposes world-scoped TF topic instead of `/tf`, first run `gz topic -l | rg tf`
+> and replace `/tf` with the exact topic.
 
 ## Terminal G — Start octomap_server with sim time
 
@@ -114,7 +130,7 @@ Use all checks below before changing algorithm:
 
 1. Ensure `/clock` is bridged and `octomap_server use_sim_time=true`.
 2. Ensure both TF links exist:
-   - dynamic `map -> base_link` (Terminal F)
+   - dynamic `map -> base_link` (from PosePublisher TF bridge in Terminal F)
    - static `base_link -> front_depth` (Terminal E)
 3. Verify TF is continuous:
 
