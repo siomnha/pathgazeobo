@@ -20,6 +20,9 @@
     <plugin filename="gz-sim-scene-broadcaster-system"
       name="gz::sim::systems::SceneBroadcaster">
     </plugin>
+    <plugin filename="gz-sim-joint-state-publisher-system"
+      name="gz::sim::systems::JointStatePublisher">
+    </plugin>
     <plugin filename="gz-sim-imu-system"
       name="gz::sim::systems::Imu">
     </plugin>
@@ -469,6 +472,14 @@
     <include>
       <uri>https://fuel.gazebosim.org/1.0/saiaravind19/models/helipad</uri>
       <pose degrees="true">0 0 0.06 0 0 90</pose>
+    </include>
+
+
+    <!-- Use SITL iris model instead of local placeholder model. -->
+    <include>
+      <uri>model://iris</uri>
+      <name>sitl_iris</name>
+      <pose>0 0 0.2 0 0 0</pose>
     </include>
 
     <!-- <include>
