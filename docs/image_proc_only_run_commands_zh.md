@@ -67,6 +67,12 @@ ros2 run ros_gz_bridge parameter_bridge \
   /camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo
 ```
 
+<<<<<<< codex/add-copter-with-depth-camera-to-simulate-octomap-mgp53r
+> 如果你的 Gazebo 话题是 world scoped（例如 `/world/.../sensor/front_depth/image`），
+> 就把上面 `/front_depth` 和 `/camera_info` 替换成对应长话题名。
+
+=======
+>>>>>>> main
 ### 终端 4：depth_image_proc 生成点云
 ```bash
 source /opt/ros/humble/setup.bash
@@ -112,3 +118,65 @@ ros2 topic echo /octomap_full --once
 如果你选择了 image proc 链路：
 - 只看 `/front_depth` + `/camera_info` + `/depth/points`
 - 不要再用 `/front_depth/points` 直桥命令
+<<<<<<< codex/add-copter-with-depth-camera-to-simulate-octomap-mgp53r
+
+---
+
+## 5) 一键脚本（自动识别短话题/长话题）
+
+本仓库脚本支持自动识别 `flat`（`/front_depth`）和 `world_scoped`（`/world/.../image`）两种布局：
+
+```bash
+PIPELINE_MODE=image_proc TOPIC_LAYOUT=auto ./scripts/run_iris_octomap_pipeline.sh
+```
+
+---
+
+## 6) 你这次遇到的核心问题：UAV TF 缺失与建图“拖影”
+
+如果 `/octomap_full` 有数据，但地图像“相机固定在机头前方”或者飞行时出现明显拖影，通常是 TF 问题：
+
+1. 缺少 `map -> base_link`（机体位姿）动态 TF；
+2. 缺少 `base_link -> front_depth`（相机外参）TF；
+3. `octomap_server` 的 `frame_id` 设成了不稳定或不连通的坐标系。
+
+### 推荐做法（先稳定，再进阶）
+
+#### A. 先用机体系稳定建图（最快验证）
+
+把 octomap 固定到机体坐标系，先确认没有“固定在前方”的错觉：
+
+```bash
+ros2 run octomap_server octomap_server_node --ros-args \
+  -p resolution:=0.15 \
+  -p frame_id:=base_link \
+  -p sensor_model/max_range:=20.0 \
+  -r cloud_in:=/depth/points
+```
+
+#### B. 补上相机外参 TF（base_link -> front_depth）
+
+相机参数与 SDF `pose` 对齐（默认 `0.12 0 0.03 0 0 0`）：
+
+```bash
+ros2 run tf2_ros static_transform_publisher \
+  0.12 0 0.03 0 0 0 base_link front_depth
+```
+
+#### C. 最终切回全局地图（map）
+
+当你确认 SITL/定位链路已提供连续 `map -> base_link` 后，再把 `octomap_server` 改回：
+
+```bash
+-p frame_id:=map
+```
+
+### 快速检查 TF 是否完整
+
+```bash
+ros2 run tf2_tools view_frames
+ros2 topic echo /tf --once
+ros2 topic echo /tf_static --once
+```
+=======
+>>>>>>> main
