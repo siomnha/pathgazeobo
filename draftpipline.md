@@ -2,6 +2,8 @@
 
 > Goal: fix mapping smear/ghosting when drone is moving by using the correct TF chain.
 
+> Republish note: this draft was republished to keep the TF-first manual command flow as the latest PR version.
+
 ## 0) Why smear happens
 
 When the drone moves, OctoMap must transform each incoming point cloud from camera frame into a stable world frame.
