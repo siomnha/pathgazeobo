@@ -8,6 +8,8 @@
 
 If `front_depth -> base_link -> map` is not continuously available with simulation time, `octomap_server` drops clouds and RViz map will look empty or only local/front updates.
 
+Also, if you publish TF from multiple sources at the same time (for example PosePublisher TF + your own dynamic-pose->TF bridge), TF may fight/oscillate and mapping becomes unstable.
+
 ---
 
 ## 1) Use ONE command flow only (no two modes)
@@ -20,11 +22,13 @@ This draft uses only:
 
 No direct points mode here.
 
+And use only **one dynamic TF source** (do NOT bridge two dynamic TF sources simultaneously).
+
 ---
 
 ## 2) Terminal-by-terminal commands
 
-Before running terminals, ensure your world has PosePublisher plugin (you said you added it):
+Before running terminals, ensure PosePublisher is publishing pose topics (even if TF is not generated on your setup):
 
 ```xml
 <plugin filename="gz-sim-pose-publisher-system"
@@ -35,6 +39,12 @@ Before running terminals, ensure your world has PosePublisher plugin (you said y
   <publish_nested_model_pose>false</publish_nested_model_pose>
   <publish_tf>true</publish_tf>
 </plugin>
+```
+
+Then check available Gazebo topics first:
+
+```bash
+gz topic -l | rg -E '(dynamic_pose|pose/info|front_depth|camera_info|clock|/tf)'
 ```
 
 ## Terminal A — Gazebo
@@ -83,20 +93,21 @@ ros2 run tf2_ros static_transform_publisher \
   0.12 0 0.03 0 0 0 base_link front_depth
 ```
 
-## Terminal F — Bridge Gazebo TF to ROS TF (must-have for global map)
+## Terminal F — Dynamic TF bridge (must-have for global map)
 
-With PosePublisher `<publish_tf>true</publish_tf>`, bridge `/tf` directly:
+Since your PosePublisher is not generating TF on this setup, use dynamic pose topic as the dynamic TF source:
 
 ```bash
 source /opt/ros/humble/setup.bash
 ros2 run ros_gz_bridge parameter_bridge \
-  /tf@tf2_msgs/msg/TFMessage@gz.msgs.Pose_V
+  /world/goaero_mission3/dynamic_pose/info@tf2_msgs/msg/TFMessage@gz.msgs.Pose_V
 ```
 
+> Important: run only one dynamic TF source.
+>
 > This is the critical step that keeps camera moving in map frame.
 >
-> If your Gazebo exposes world-scoped TF topic instead of `/tf`, first run `gz topic -l | rg tf`
-> and replace `/tf` with the exact topic.
+> If your dynamic pose topic path differs, run `gz topic -l | rg dynamic_pose` and replace it.
 
 ## Terminal G — Start octomap_server with sim time
 
@@ -130,9 +141,10 @@ Use all checks below before changing algorithm:
 
 1. Ensure `/clock` is bridged and `octomap_server use_sim_time=true`.
 2. Ensure both TF links exist:
-   - dynamic `map -> base_link` (from PosePublisher TF bridge in Terminal F)
+   - dynamic `map -> base_link` (from dynamic_pose bridge in Terminal F)
    - static `base_link -> front_depth` (Terminal E)
-3. Verify TF is continuous:
+3. Ensure only one dynamic TF source is running (no duplicate `/tf` publishers for the same frames).
+4. Verify TF is continuous:
 
 ```bash
 ros2 run tf2_tools view_frames
@@ -140,8 +152,9 @@ ros2 topic echo /tf --once
 ros2 topic echo /tf_static --once
 ```
 
-4. If still dropping, reduce cloud input rate at source (recommended): lower depth camera `update_rate` in SITL iris SDF (e.g., 15 -> 10).
-5. Keep one OctoMap subscriber only (do not start multiple octomap_server instances).
+5. If still dropping, reduce cloud input rate at source (recommended): lower depth camera `update_rate` in SITL iris SDF (e.g., 15 -> 10).
+6. If camera mount is rigid, keep static `base_link -> front_depth`; if mount is dynamic/gimbal, do not use static TF for camera—use dynamic sensor TF source only.
+7. Keep one OctoMap subscriber only (do not start multiple octomap_server instances).
 
 ---
 
@@ -158,6 +171,8 @@ ros2 topic hz /depth/points
 
 # 3) TF chain is valid (map/base_link/front_depth)
 ros2 run tf2_tools view_frames
+ros2 run tf2_ros tf2_echo map base_link
+ros2 run tf2_ros tf2_echo base_link front_depth
 
 # 4) Octomap has output
 ros2 topic echo /octomap_full --once
