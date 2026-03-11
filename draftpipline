@@ -1,0 +1,47 @@
+## Open Gazebo
+cd ~/planner_ws/pathgazeobo-main
+gz sim -v4 -r goaero_mission3_v1.sdf
+
+
+# Open Mavproxy
+cd ~/ardupilot
+source /opt/ros/humble/setup.bash
+sim_vehicle.py -v ArduCopter -f gazebo-iris --model JSON --map --console
+
+
+
+# image + camera_info
+source /opt/ros/humble/setup.bash
+ros2 run ros_gz_bridge parameter_bridge \
+  /front_depth@sensor_msgs/msg/Image@gz.msgs.Image \
+  /camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo
+
+
+# depth image -> point cloud
+source /opt/ros/humble/setup.bash
+ros2 run depth_image_proc point_cloud_xyz_node --ros-args \
+  -r image_rect:=/front_depth \
+  -r camera_info:=/camera_info \
+  -r points:=/depth/points
+
+
+# octomap
+source /opt/ros/humble/setup.bash
+ros2 run octomap_server octomap_server_node --ros-args \
+  -p resolution:=0.15 \
+  -p frame_id:=map \
+  -p sensor_model/max_range:=20.0 \
+  -r cloud_in:=/depth/points
+
+
+
+# Change the camera orientation for correct rviz2 tf
+ros2 run tf2_ros static_transform_publisher \
+0 0 0 -1.5708 0 -1.5708 map front_depth
+
+
+ros2 topic echo /front_depth --once
+ros2 topic echo /depth/points --once
+ros2 topic echo /octomap_full --once
+
+
